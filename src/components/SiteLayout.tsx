@@ -4,6 +4,7 @@ Cairo Circuit Futurism — Layout shell
 
 import SiteHeader from "@/components/SiteHeader";
 import SiteFooter from "@/components/SiteFooter";
+import BackToTopButton from "@/components/BackToTopButton";
 
 export default function SiteLayout({
   children,
@@ -36,6 +37,7 @@ export default function SiteLayout({
       )}
 
       <main id="main" className="mx-auto max-w-6xl px-4 sm:px-6">{children}</main>
+      <BackToTopButton />
       <SiteFooter />
     </div>
   );

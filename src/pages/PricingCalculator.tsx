@@ -30,6 +30,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Link } from "wouter";
 import { site } from "@/lib/content";
 import { toast } from "sonner";
+import PricingOnboardingTooltip from "@/components/PricingOnboardingTooltip";
 import { submitLeadRequest } from "@/lib/leadRequests";
 import { useI18n } from "@/contexts/I18nContext";
 import {
@@ -282,7 +283,10 @@ export default function PricingCalculator() {
                 <Calculator className="h-5 w-5 text-primary" aria-hidden="true" />
                 <div className="text-lg font-semibold">{t("pricing.buildYourQuote")}</div>
               </div>
-              <Badge className="bg-white/6 border border-white/10 text-foreground">{t("pricing.badge.estimate")}</Badge>
+              <div className="flex items-center gap-2">
+                <PricingOnboardingTooltip />
+                <Badge className="bg-white/6 border border-white/10 text-foreground">{t("pricing.badge.estimate")}</Badge>
+              </div>
             </div>
 
             <div className="mt-6">

@@ -3,6 +3,7 @@ Cairo Circuit Futurism — App routing (updated IA)
 */
 
 import { Toaster } from "@/components/ui/sonner";
+import ScrollToTop from "@/components/ScrollToTop";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Router, Route, Switch } from "wouter";
 import ErrorBoundary from "@/components/ErrorBoundary";
@@ -63,6 +64,7 @@ export default function App() {
         <I18nProvider>
           <TooltipProvider>
             <Toaster />
+            <ScrollToTop />
             <AppRouter />
           </TooltipProvider>
         </I18nProvider>
