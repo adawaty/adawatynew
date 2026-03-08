@@ -193,7 +193,7 @@ export const services: Service[] = [
     title: "Brand Intelligence & Positioning",
     pillar: "Brand Intelligence",
     summary:
-      "AI-assisted, human-led strategy that makes your narrative obvious and repeatable — then turns it into an Algorithmic Identity (Branding5) when needed.",
+      "AI-assisted, human-led strategy that makes your narrative obvious and repeatable — then turns it into a trust-first identity system engineered for your market.",
     bullets: [
       "Positioning + value proposition (elite clarity)",
       "Ideal customer profile + segments",
@@ -206,7 +206,7 @@ export const services: Service[] = [
     title: "Brand System (Identity + Assets)",
     pillar: "Brand System",
     summary:
-      "A cohesive visual system with templates and rules your team can actually maintain — optionally engineered with Branding5 to align identity with market signals.",
+      "A cohesive visual system with templates and rules your team can actually maintain — engineered to align identity with what your market already trusts.",
     bullets: [
       "Logo/mark system (if needed)",
       "Typography + color + layout rules",
@@ -232,7 +232,7 @@ export const services: Service[] = [
     title: "Content Engine (AI + Human Review)",
     pillar: "Content Engine",
     summary:
-      "On-brand content creation, scheduling, and analysis—built as a repeatable workflow that can power Dfirst demand loops.",
+      "On-brand content creation, scheduling, and analysis—built as a repeatable workflow that feeds acquisition loops.",
     bullets: [
       "Brand voice capture + prompt kits",
       "Reusable templates and content calendar",
@@ -245,7 +245,7 @@ export const services: Service[] = [
     title: "Search + AI Visibility (SEO/AEO/LLMSEO)",
     pillar: "AI Visibility",
     summary:
-      "Help your brand appear in Google AND in AI assistants (ChatGPT, Perplexity, Google AI) — while keeping acquisition measurable for Dfirst.",
+      "Help your brand appear in Google AND in AI assistants (ChatGPT, Perplexity, Google AI) — while keeping acquisition measurable.",
     bullets: [
       "On-page SEO + technical cleanup",
       "AEO: conversational query coverage",
