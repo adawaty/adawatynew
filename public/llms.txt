@@ -1,0 +1,35 @@
+# Adawaty
+
+Adawaty is a DFY studio delivering **Brand → Build → Demand** for founders and teams.
+
+This site supports multiple languages via the `?lang=` parameter:
+- English: https://adawaty.net/?lang=en
+- Français: https://adawaty.net/?lang=fr
+- Español: https://adawaty.net/?lang=es
+- Deutsch: https://adawaty.net/?lang=de
+- مصري (Arabic): https://adawaty.net/?lang=ar
+
+Core pillars (services):
+- Brand Intelligence & Positioning: https://adawaty.net/services/brand-intelligence?lang=en
+- Brand System (Identity + Assets): https://adawaty.net/services/brand-system?lang=en
+- DFY Website Build: https://adawaty.net/services/dfy-website?lang=en
+- Content Engine: https://adawaty.net/services/content-engine?lang=en
+- Search + AI Visibility (SEO/AEO/LLMSEO): https://adawaty.net/services/ai-visibility?lang=en
+- Concierge Partner: https://adawaty.net/services/concierge?lang=en
+
+Solutions (deliverables):
+- App Development (Web + Mobile): https://adawaty.net/solutions/app-development?lang=en
+- Bio Pages (Personal Brand Hub): https://adawaty.net/solutions/bio-pages?lang=en
+- Scheduling + Intake: https://adawaty.net/solutions/scheduling-intake?lang=en
+- ERP-lite Workflows: https://adawaty.net/solutions/erp-workflows?lang=en
+
+Persona pages:
+- Websites for Lawyers: https://adawaty.net/for/lawyers?lang=en
+- Websites for Doctors & Clinics: https://adawaty.net/for/doctors?lang=en
+- Systems for Business Owners: https://adawaty.net/for/business-owners?lang=en
+
+AI Visibility Audit:
+- https://adawaty.net/ai-visibility-audit?lang=en
+
+Contact:
+- https://adawaty.net/contact?lang=en

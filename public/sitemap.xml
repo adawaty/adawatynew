@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <!-- Base routes (default) -->
+  <url><loc>https://adawaty.net/</loc></url>
+  <url><loc>https://adawaty.net/services</loc></url>
+  <url><loc>https://adawaty.net/solutions</loc></url>
+  <url><loc>https://adawaty.net/for</loc></url>
+  <url><loc>https://adawaty.net/industries</loc></url>
+  <url><loc>https://adawaty.net/work</loc></url>
+  <url><loc>https://adawaty.net/ai-visibility-audit</loc></url>
+  <url><loc>https://adawaty.net/pricing-calculator</loc></url>
+  <url><loc>https://adawaty.net/about</loc></url>
+  <url><loc>https://adawaty.net/contact</loc></url>
+
+  <!-- Programmatic detail routes -->
+  <url><loc>https://adawaty.net/industries/ecommerce</loc></url>
+  <url><loc>https://adawaty.net/industries/saas</loc></url>
+  <url><loc>https://adawaty.net/industries/real-estate</loc></url>
+
+  <url><loc>https://adawaty.net/services/brand-intelligence</loc></url>
+  <url><loc>https://adawaty.net/services/brand-system</loc></url>
+  <url><loc>https://adawaty.net/services/dfy-website</loc></url>
+  <url><loc>https://adawaty.net/services/content-engine</loc></url>
+  <url><loc>https://adawaty.net/services/ai-visibility</loc></url>
+  <url><loc>https://adawaty.net/services/concierge</loc></url>
+
+  <url><loc>https://adawaty.net/solutions/app-development</loc></url>
+  <url><loc>https://adawaty.net/solutions/bio-pages</loc></url>
+  <url><loc>https://adawaty.net/solutions/scheduling-intake</loc></url>
+  <url><loc>https://adawaty.net/solutions/erp-workflows</loc></url>
+
+  <url><loc>https://adawaty.net/for/lawyers</loc></url>
+  <url><loc>https://adawaty.net/for/doctors</loc></url>
+  <url><loc>https://adawaty.net/for/business-owners</loc></url>
+
+  <url><loc>https://adawaty.net/work/personal-brand-rebuild</loc></url>
+  <url><loc>https://adawaty.net/work/smb-turnkey-launch</loc></url>
+  <url><loc>https://adawaty.net/work/ai-visibility-foundations</loc></url>
+  <url><loc>https://adawaty.net/work/multi-sector-brand-build-demand</loc></url>
+
+  <!-- Language parameter variants (crawlable URLs) -->
+  <url><loc>https://adawaty.net/?lang=en</loc></url>
+  <url><loc>https://adawaty.net/?lang=fr</loc></url>
+  <url><loc>https://adawaty.net/?lang=es</loc></url>
+  <url><loc>https://adawaty.net/?lang=de</loc></url>
+  <url><loc>https://adawaty.net/?lang=ar</loc></url>
+</urlset>
