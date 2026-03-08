@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { getSql } from "./_db";
-import { json, methodNotAllowed } from "./_http";
+import { getSql } from "./_db.js";
+import { json, methodNotAllowed } from "./_http.js";
 
 const LeadRequestSchema = z.object({
   source: z.string().min(1),

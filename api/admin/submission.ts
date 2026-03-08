@@ -1,5 +1,5 @@
-import { getAdminToken, getSql } from "../../_db";
-import { getBearerToken, json, methodNotAllowed, unauthorized } from "../../_http";
+import { getAdminToken, getSql } from "../../_db.js";
+import { getBearerToken, json, methodNotAllowed, unauthorized } from "../../_http.js";
 
 export default async function handler(req: Request) {
   if (req.method === "GET") {
