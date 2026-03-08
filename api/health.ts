@@ -11,7 +11,7 @@ function json(status: number, body: unknown) {
 }
 
 function getSql() {
-  const url = process.env.DATABASE_URL;
+  const url = process.env.DATABASE_URL || process.env.DATABASE_URL_POOLER;
   if (!url) throw new Error("Missing DATABASE_URL env var");
   return neon(url);
 }

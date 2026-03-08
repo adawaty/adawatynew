@@ -18,7 +18,8 @@ function methodNotAllowed(allowed: string[]) {
 }
 
 function getSql() {
-  const url = process.env.DATABASE_URL;
+  // Prefer pooled when user set it
+  const url = process.env.DATABASE_URL || process.env.DATABASE_URL_POOLER;
   if (!url) throw new Error("Missing DATABASE_URL env var");
   return neon(url);
 }
@@ -56,10 +57,12 @@ export default async function handler(req: Request) {
     const data = LeadRequestSchema.parse(await req.json());
     const sql = getSql();
 
-    // Try a few times to avoid rare serial collisions.
+    // Try a few times to avoid rare serial collisions + transient DB errors.
     for (let i = 0; i < 5; i++) {
       const serial = `ADW-${serialNow()}-${randomPart()}`;
-      const rows = await sql/*sql*/`
+      let rows: any;
+      try {
+        rows = await sql/*sql*/`
         insert into lead_requests (
           serial, source, lang, name, email, phone, company, request_type, pricing, notes, user_agent
         )
@@ -79,6 +82,11 @@ export default async function handler(req: Request) {
         on conflict (serial) do nothing
         returning serial;
       `;
+      } catch (e) {
+        // small backoff
+        await new Promise((r) => setTimeout(r, 150 * (i + 1)));
+        continue;
+      }
 
       if (Array.isArray(rows) && rows.length > 0) {
         return json(200, { ok: true, serial: rows[0].serial });

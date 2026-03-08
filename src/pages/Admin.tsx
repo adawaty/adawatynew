@@ -58,8 +58,12 @@ export default function Admin() {
   );
 
   async function loadList() {
-    if (!token) return;
+    if (!token) {
+      toast.error("ADMIN_TOKEN is required");
+      return;
+    }
     setLoading(true);
+    const toastId = toast.loading("Loading submissions…");
     try {
       const res = await fetch("/api/admin/submissions?limit=100", { headers });
       const text = await res.text();
@@ -71,8 +75,9 @@ export default function Admin() {
       }
       if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
       setItems(data.items ?? []);
+      toast.success("Loaded", { id: toastId, description: `${(data.items ?? []).length} submissions` });
     } catch (e: any) {
-      toast.error(t("admin.error"), { description: e?.message ?? "" });
+      toast.error(t("admin.error"), { id: toastId, description: e?.message ?? "" });
     } finally {
       setLoading(false);
     }
@@ -103,10 +108,28 @@ export default function Admin() {
     }
   }
 
+  async function checkHealth() {
+    if (!token) return;
+    try {
+      const res = await fetch("/api/health", { headers });
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text?.slice(0, 200) || "Non-JSON server response");
+      }
+      if (!res.ok || !data.ok) throw new Error(data?.error ?? "Health check failed");
+      toast.success("API health OK", { description: `DB: ${data.db?.now ?? "ok"}` });
+    } catch (e: any) {
+      toast.error("API health failed", { description: e?.message ?? "" });
+    }
+  }
+
   useEffect(() => {
-    if (token) loadList();
+    // Do not auto-load on mount; require explicit action to avoid mobile/touch confusion
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [token]);
+  }, []);
 
   return (
     <SiteLayout title={t("admin.title")} subtitle={t("admin.subtitle")}>
@@ -134,6 +157,10 @@ export default function Admin() {
                     localStorage.setItem("adawaty_admin_token", token);
                     loadList();
                   }}
+                  onPointerDown={() => {
+                    // improves touch reliability on some mobile browsers
+                    localStorage.setItem("adawaty_admin_token", token);
+                  }}
                   disabled={!token || loading}
                 >
                   {t("admin.saveAndLoad")}
@@ -147,6 +174,10 @@ export default function Admin() {
                     setItems([]);
                     setDetail(null);
                     setSelectedSerial("");
+                    toast.success("Signed out");
+                  }}
+                  onPointerDown={() => {
+                    localStorage.removeItem("adawaty_admin_token");
                   }}
                 >
                   {t("admin.signOut")}
@@ -158,9 +189,14 @@ export default function Admin() {
 
             <div className="flex items-center justify-between">
               <div className="text-sm font-semibold">{t("admin.submissions")}</div>
-              <Button size="sm" variant="ghost" onClick={loadList} disabled={!token || loading}>
-                {t("admin.refresh")}
-              </Button>
+              <div className="flex items-center gap-2">
+                <Button size="sm" variant="ghost" onClick={checkHealth} disabled={!token || loading}>
+                  Health
+                </Button>
+                <Button size="sm" variant="ghost" onClick={loadList} disabled={!token || loading}>
+                  {t("admin.refresh")}
+                </Button>
+              </div>
             </div>
 
             <div className="mt-3 grid gap-2">
