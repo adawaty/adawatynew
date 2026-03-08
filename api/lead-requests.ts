@@ -1,6 +1,27 @@
+import { neon } from "@neondatabase/serverless";
 import { z } from "zod";
-import { getSql } from "./_db.js";
-import { json, methodNotAllowed } from "./_http.js";
+
+// Self-contained endpoint (avoids cross-file imports on Vercel)
+
+function json(status: number, body: unknown) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+    },
+  });
+}
+
+function methodNotAllowed(allowed: string[]) {
+  return json(405, { ok: false, error: "Method Not Allowed", allowed });
+}
+
+function getSql() {
+  const url = process.env.DATABASE_URL;
+  if (!url) throw new Error("Missing DATABASE_URL env var");
+  return neon(url);
+}
 
 const LeadRequestSchema = z.object({
   source: z.string().min(1),
@@ -25,7 +46,6 @@ function serialNow() {
 }
 
 function randomPart() {
-  // 6 chars base36
   return Math.random().toString(36).slice(2, 8).toUpperCase();
 }
 
@@ -37,9 +57,8 @@ export default async function handler(req: Request) {
     const sql = getSql();
 
     // Try a few times to avoid rare serial collisions.
-    let serial = "";
     for (let i = 0; i < 5; i++) {
-      serial = `ADW-${serialNow()}-${randomPart()}`;
+      const serial = `ADW-${serialNow()}-${randomPart()}`;
       const rows = await sql/*sql*/`
         insert into lead_requests (
           serial, source, lang, name, email, phone, company, request_type, pricing, notes, user_agent
@@ -68,6 +87,6 @@ export default async function handler(req: Request) {
 
     return json(500, { ok: false, error: "Could not allocate serial" });
   } catch (err: any) {
-    return json(400, { ok: false, error: err?.message ?? "Bad Request" });
+    return json(500, { ok: false, error: err?.message ?? "Server error" });
   }
 }

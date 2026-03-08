@@ -62,7 +62,13 @@ export default function Admin() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/submissions?limit=100", { headers });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text?.slice(0, 200) || "Non-JSON server response");
+      }
       if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
       setItems(data.items ?? []);
     } catch (e: any) {
@@ -77,7 +83,13 @@ export default function Admin() {
     setLoading(true);
     try {
       const res = await fetch(`/api/admin/submission?serial=${encodeURIComponent(serial)}`, { headers });
-      const data = await res.json();
+      const text = await res.text();
+      let data: any = null;
+      try {
+        data = JSON.parse(text);
+      } catch {
+        throw new Error(text?.slice(0, 200) || "Non-JSON server response");
+      }
       if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
       setDetail(data.item);
       setEditCompany(data.item?.company ?? "");
@@ -223,7 +235,13 @@ export default function Admin() {
                               pricing: pricingJson,
                             }),
                           });
-                          const data = await res.json();
+                          const text = await res.text();
+                          let data: any = null;
+                          try {
+                            data = JSON.parse(text);
+                          } catch {
+                            throw new Error(text?.slice(0, 200) || "Non-JSON server response");
+                          }
                           if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
                           setDetail(data.item);
                           toast.success("Saved", { id: toastId });
@@ -263,7 +281,13 @@ export default function Admin() {
                                   method: "DELETE",
                                   headers,
                                 });
-                                const data = await res.json();
+                                const text = await res.text();
+                                let data: any = null;
+                                try {
+                                  data = JSON.parse(text);
+                                } catch {
+                                  throw new Error(text?.slice(0, 200) || "Non-JSON server response");
+                                }
                                 if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
                                 toast.success("Deleted", { id: toastId });
                                 setDetail(null);
