@@ -24,17 +24,6 @@ async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise
 }
 
 function methodNotAllowed(allowed: string[]) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: {
-      "content-type": "application/json; charset=utf-8",
-      "cache-control": "no-store",
-      ...(extraHeaders ?? {}),
-    },
-  });
-}
-
-function methodNotAllowed(allowed: string[]) {
   return json(405, { ok: false, error: "Method Not Allowed", allowed });
 }
 
