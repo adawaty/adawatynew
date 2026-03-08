@@ -11,6 +11,29 @@ function json(status: number, body: unknown, extraHeaders?: Record<string, strin
   });
 }
 
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: any;
+  const timeout = new Promise<never>((_, rej) => {
+    t = setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+function methodNotAllowed(allowed: string[]) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      ...(extraHeaders ?? {}),
+    },
+  });
+}
+
 function methodNotAllowed(allowed: string[]) {
   return json(405, { ok: false, error: "Method Not Allowed", allowed });
 }
@@ -49,12 +72,16 @@ export default async function handler(req: Request) {
     const sql = getSql();
 
     if (req.method === "GET") {
-      const rows = await sql/*sql*/`
-        select *
-        from lead_requests
-        where serial = ${serial}
-        limit 1;
-      `;
+      const rows = await withTimeout(
+        sql/*sql*/`
+          select *
+          from lead_requests
+          where serial = ${serial}
+          limit 1;
+        `,
+        8000,
+        "Get submission"
+      );
 
       if (!rows || rows.length === 0) return json(404, { ok: false, error: "Not found" });
       return json(200, { ok: true, item: rows[0] });
@@ -69,27 +96,35 @@ export default async function handler(req: Request) {
       const notes = typeof body.notes === "string" ? body.notes : null;
       const pricing = body.pricing ?? null;
 
-      const rows = await sql/*sql*/`
-        update lead_requests
-        set
-          company = ${company},
-          request_type = ${request_type},
-          notes = ${notes},
-          pricing = ${pricing}
-        where serial = ${serial}
-        returning *;
-      `;
+      const rows = await withTimeout(
+        sql/*sql*/`
+          update lead_requests
+          set
+            company = ${company},
+            request_type = ${request_type},
+            notes = ${notes},
+            pricing = ${pricing}
+          where serial = ${serial}
+          returning *;
+        `,
+        8000,
+        "Update submission"
+      );
 
       if (!rows || rows.length === 0) return json(404, { ok: false, error: "Not found" });
       return json(200, { ok: true, item: rows[0] });
     }
 
     if (req.method === "DELETE") {
-      const rows = await sql/*sql*/`
-        delete from lead_requests
-        where serial = ${serial}
-        returning serial;
-      `;
+      const rows = await withTimeout(
+        sql/*sql*/`
+          delete from lead_requests
+          where serial = ${serial}
+          returning serial;
+        `,
+        8000,
+        "Delete submission"
+      );
 
       if (!rows || rows.length === 0) return json(404, { ok: false, error: "Not found" });
       return json(200, { ok: true, serial });

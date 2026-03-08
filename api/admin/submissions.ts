@@ -11,6 +11,29 @@ function json(status: number, body: unknown, extraHeaders?: Record<string, strin
   });
 }
 
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: any;
+  const timeout = new Promise<never>((_, rej) => {
+    t = setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
+function methodNotAllowed(allowed: string[]) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: {
+      "content-type": "application/json; charset=utf-8",
+      "cache-control": "no-store",
+      ...(extraHeaders ?? {}),
+    },
+  });
+}
+
 function methodNotAllowed(allowed: string[]) {
   return json(405, { ok: false, error: "Method Not Allowed", allowed });
 }
@@ -49,22 +72,26 @@ export default async function handler(req: Request) {
     const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
     const sql = getSql();
-    const rows = await sql/*sql*/`
-      select
-        serial,
-        created_at,
-        source,
-        lang,
-        name,
-        email,
-        phone,
-        company,
-        request_type
-      from lead_requests
-      order by created_at desc
-      limit ${limit}
-      offset ${offset};
-    `;
+    const rows = await withTimeout(
+      sql/*sql*/`
+        select
+          serial,
+          created_at,
+          source,
+          lang,
+          name,
+          email,
+          phone,
+          company,
+          request_type
+        from lead_requests
+        order by created_at desc
+        limit ${limit}
+        offset ${offset};
+      `,
+      8000,
+      "List submissions"
+    );
 
     return json(200, { ok: true, items: rows, limit, offset });
   } catch (err: any) {

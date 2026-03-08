@@ -29,7 +29,17 @@ export default async function handler(req: Request) {
     const okToken = tokenHeader === `Bearer ${getAdminToken()}`;
 
     const sql = getSql();
-    const rows = await sql/*sql*/`select now() as now;`;
+    const rows = await (async () => {
+      let t: any;
+      const timeout = new Promise<never>((_, rej) => {
+        t = setTimeout(() => rej(new Error("Health check timed out after 5000ms")), 5000);
+      });
+      try {
+        return await Promise.race([sql/*sql*/`select now() as now;`, timeout]);
+      } finally {
+        clearTimeout(t);
+      }
+    })();
 
     return json(200, {
       ok: true,

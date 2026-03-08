@@ -58,7 +58,7 @@ export default function Contact() {
                 const msg = String(fd.get("message") ?? "").trim();
                 const interested = String(fd.get("service") ?? "").trim();
 
-                const loading = toast.loading(t("form.sending"));
+                const loading = toast.loading(t("form.sending"), { duration: 15000 });
                 try {
                   const { serial } = await submitLeadRequest({
                     source: "contact",

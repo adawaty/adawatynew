@@ -579,7 +579,7 @@ export default function PricingCalculator() {
                               toast.error(t("form.required"));
                               return;
                             }
-                            const loading = toast.loading(t("form.submitting"));
+                            const loading = toast.loading(t("form.submitting"), { duration: 15000 });
                             try {
                               await submitLeadRequest({
                                 source: "pricing-calculator",
@@ -746,7 +746,7 @@ export default function PricingCalculator() {
                       return;
                     }
                     setExporting(true);
-                    const loading = toast.loading(t("pricing.exporting"));
+                    const loading = toast.loading(t("pricing.exporting"), { duration: 15000 });
                     try {
                       const { serial } = await submitLeadRequest({
                         source: "pricing-calculator",

@@ -13,6 +13,18 @@ function json(status: number, body: unknown) {
   });
 }
 
+async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
+  let t: any;
+  const timeout = new Promise<never>((_, rej) => {
+    t = setTimeout(() => rej(new Error(`${label} timed out after ${ms}ms`)), ms);
+  });
+  try {
+    return await Promise.race([p, timeout]);
+  } finally {
+    clearTimeout(t);
+  }
+}
+
 function methodNotAllowed(allowed: string[]) {
   return json(405, { ok: false, error: "Method Not Allowed", allowed });
 }
@@ -62,7 +74,8 @@ export default async function handler(req: Request) {
       const serial = `ADW-${serialNow()}-${randomPart()}`;
       let rows: any;
       try {
-        rows = await sql/*sql*/`
+        rows = await withTimeout(
+          sql/*sql*/`
         insert into lead_requests (
           serial, source, lang, name, email, phone, company, request_type, pricing, notes, user_agent
         )
@@ -81,7 +94,10 @@ export default async function handler(req: Request) {
         )
         on conflict (serial) do nothing
         returning serial;
-      `;
+      `,
+          8000,
+          "Insert lead"
+        );
       } catch (e) {
         // small backoff
         await new Promise((r) => setTimeout(r, 150 * (i + 1)));
