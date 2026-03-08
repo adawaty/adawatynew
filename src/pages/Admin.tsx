@@ -12,6 +12,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useI18n } from "@/contexts/I18nContext";
 
@@ -33,7 +44,13 @@ export default function Admin() {
   const [items, setItems] = useState<Row[]>([]);
   const [selectedSerial, setSelectedSerial] = useState<string>("");
   const [detail, setDetail] = useState<any>(null);
+  const [editCompany, setEditCompany] = useState<string>("");
+  const [editRequestType, setEditRequestType] = useState<string>("");
+  const [editNotes, setEditNotes] = useState<string>("");
+  const [editPricing, setEditPricing] = useState<string>("");
   const [loading, setLoading] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   const headers = useMemo(
     () => ({ authorization: `Bearer ${token}`, "content-type": "application/json" }),
@@ -63,6 +80,10 @@ export default function Admin() {
       const data = await res.json();
       if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
       setDetail(data.item);
+      setEditCompany(data.item?.company ?? "");
+      setEditRequestType(data.item?.request_type ?? "");
+      setEditNotes(data.item?.notes ?? "");
+      setEditPricing(JSON.stringify(data.item?.pricing ?? null, null, 2));
     } catch (e: any) {
       toast.error(t("admin.error"), { description: e?.message ?? "" });
     } finally {
@@ -168,6 +189,100 @@ export default function Admin() {
               <div className="mt-6 text-sm text-muted-foreground">{t("admin.pick")}</div>
             ) : (
               <div className="mt-6 grid gap-4">
+                <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-white/10 bg-white/3 px-4 py-3">
+                  <div className="text-sm">
+                    <span className="text-muted-foreground">Serial:</span>{" "}
+                    <span className="font-medium">{detail.serial}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      type="button"
+                      size="sm"
+                      disabled={!token || saving}
+                      onClick={async () => {
+                        if (!detail?.serial) return;
+                        setSaving(true);
+                        const toastId = toast.loading("Saving…");
+                        try {
+                          let pricingJson: any = null;
+                          try {
+                            pricingJson = editPricing.trim() ? JSON.parse(editPricing) : null;
+                          } catch {
+                            toast.error("Pricing JSON is invalid", { id: toastId });
+                            setSaving(false);
+                            return;
+                          }
+
+                          const res = await fetch(`/api/admin/submission?serial=${encodeURIComponent(detail.serial)}`, {
+                            method: "PATCH",
+                            headers,
+                            body: JSON.stringify({
+                              company: editCompany,
+                              request_type: editRequestType,
+                              notes: editNotes,
+                              pricing: pricingJson,
+                            }),
+                          });
+                          const data = await res.json();
+                          if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
+                          setDetail(data.item);
+                          toast.success("Saved", { id: toastId });
+                          loadList();
+                        } catch (e: any) {
+                          toast.error("Couldn’t save", { id: toastId, description: e?.message ?? "" });
+                        } finally {
+                          setSaving(false);
+                        }
+                      }}
+                    >
+                      Save changes
+                    </Button>
+
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button type="button" size="sm" variant="destructive" disabled={!token || deleting}>
+                          Delete
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent>
+                        <AlertDialogHeader>
+                          <AlertDialogTitle>Delete this lead?</AlertDialogTitle>
+                          <AlertDialogDescription>
+                            This permanently deletes the record <strong>{detail.serial}</strong>. This can’t be undone.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter>
+                          <AlertDialogCancel>Cancel</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={async () => {
+                              if (!detail?.serial) return;
+                              setDeleting(true);
+                              const toastId = toast.loading("Deleting…");
+                              try {
+                                const res = await fetch(`/api/admin/submission?serial=${encodeURIComponent(detail.serial)}`, {
+                                  method: "DELETE",
+                                  headers,
+                                });
+                                const data = await res.json();
+                                if (!res.ok || !data.ok) throw new Error(data?.error ?? "Failed");
+                                toast.success("Deleted", { id: toastId });
+                                setDetail(null);
+                                setSelectedSerial("");
+                                await loadList();
+                              } catch (e: any) {
+                                toast.error("Couldn’t delete", { id: toastId, description: e?.message ?? "" });
+                              } finally {
+                                setDeleting(false);
+                              }
+                            }}
+                          >
+                            Delete
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </div>
+                </div>
                 <div className="grid gap-2 sm:grid-cols-2">
                   <div className="grid gap-2">
                     <Label>{t("admin.fields.name")}</Label>
@@ -175,7 +290,7 @@ export default function Admin() {
                   </div>
                   <div className="grid gap-2">
                     <Label>{t("admin.fields.company")}</Label>
-                    <Input value={detail.company ?? ""} readOnly />
+                    <Input value={editCompany} onChange={(e) => setEditCompany(e.target.value)} />
                   </div>
                 </div>
 
@@ -197,18 +312,18 @@ export default function Admin() {
                   </div>
                   <div className="grid gap-2">
                     <Label>{t("admin.fields.requestType")}</Label>
-                    <Input value={detail.request_type ?? ""} readOnly />
+                    <Input value={editRequestType} onChange={(e) => setEditRequestType(e.target.value)} />
                   </div>
                 </div>
 
                 <div className="grid gap-2">
                   <Label>{t("admin.fields.notes")}</Label>
-                  <Textarea value={detail.notes ?? ""} readOnly className="min-h-24" />
+                  <Textarea value={editNotes} onChange={(e) => setEditNotes(e.target.value)} className="min-h-24" />
                 </div>
 
                 <div className="grid gap-2">
                   <Label>{t("admin.fields.pricing")}</Label>
-                  <Textarea value={JSON.stringify(detail.pricing ?? null, null, 2)} readOnly className="min-h-52 font-mono text-xs" />
+                  <Textarea value={editPricing} onChange={(e) => setEditPricing(e.target.value)} className="min-h-52 font-mono text-xs" />
                 </div>
               </div>
             )}
