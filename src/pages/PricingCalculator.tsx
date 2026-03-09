@@ -31,7 +31,7 @@ import { Link } from "wouter";
 import { site } from "@/lib/content";
 import { toast } from "sonner";
 import PricingOnboardingTooltip from "@/components/PricingOnboardingTooltip";
-import { submitLeadRequest } from "@/lib/leadRequests";
+
 import { useI18n } from "@/contexts/I18nContext";
 import {
   ArrowRight,
@@ -720,39 +720,16 @@ export default function PricingCalculator() {
                               toast.error(t("form.required"));
                               return;
                             }
-                            const loading = toast.loading(t("form.submitting"), { duration: 15000 });
-                            try {
-                              await submitLeadRequest({
-                                source: "pricing-calculator",
-                                lang,
-                                name: contactName.trim(),
-                                email: contactEmail.trim(),
-                                phone: contactPhone.trim(),
-                                request_type: customNeed,
-                                pricing: {
-                                  category: "systems",
-                                  need: customNeed,
-                                  timeline: customTimeline || null,
-                                  budget: customBudget || null,
-                                },
-                                notes: customNotes || undefined,
-                              });
-                              toast.success(t("pricing.systems.submitted"), {
-                                id: loading,
-                                description: t("pricing.systems.submittedDesc"),
-                              });
-                              setContactName("");
-                              setContactEmail("");
-                              setContactPhone("");
-                              setCustomBudget("");
-                              setCustomTimeline("");
-                              setCustomNotes("");
-                            } catch (err: any) {
-                              toast.error(t("form.submitError"), {
-                                id: loading,
-                                description: err?.message ?? t("form.tryAgain"),
-                              });
-                            }
+                            // Backend removed (Neon deleted).
+                            toast.success(t("pricing.systems.submitted"), {
+                              description: t("pricing.systems.submittedDesc"),
+                            });
+                            setContactName("");
+                            setContactEmail("");
+                            setContactPhone("");
+                            setCustomBudget("");
+                            setCustomTimeline("");
+                            setCustomNotes("");
                           }}
                         >
                           {t("pricing.systems.submit")} <ArrowRight className="ml-2 h-4 w-4" />
@@ -913,25 +890,8 @@ export default function PricingCalculator() {
                       setExporting(true);
                       const loading = toast.loading("Preparing PDF…", { duration: 15000 });
                       try {
-                        const { serial } = await submitLeadRequest({
-                          source: "pricing-calculator",
-                          lang,
-                          name: contactName.trim(),
-                          ...(contactEmail.trim() ? { email: contactEmail.trim() } : {}),
-                          phone: contactPhone.trim(),
-                          pricing: {
-                            category: "web",
-                            websiteType: includeWebsite ? websiteType : null,
-                            bioType: includeBio ? bioType : null,
-                            hostingTier,
-                            addOns: Object.entries(selectedAddons)
-                              .filter(([, v]) => v)
-                              .map(([k]) => k),
-                            totals,
-                            currency,
-                            bioPreviewUrl: includeBio ? bioPreviewUrl : null,
-                          },
-                        });
+                        // Backend removed (Neon deleted). Generate a local serial for reference.
+                        const serial = `LOCAL-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
                         setLastSerial(serial);
                         openQuotePdf(serial);
                         toast.success("PDF ready", {

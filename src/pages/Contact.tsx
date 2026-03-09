@@ -20,7 +20,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "sonner";
 import { useState } from "react";
-import { submitLeadRequest } from "@/lib/leadRequests";
+
 import { useI18n } from "@/contexts/I18nContext";
 
 export default function Contact() {
@@ -58,29 +58,10 @@ export default function Contact() {
                 const msg = String(fd.get("message") ?? "").trim();
                 const interested = String(fd.get("service") ?? "").trim();
 
-                const loading = toast.loading(t("form.sending"), { duration: 15000 });
-                try {
-                  const { serial } = await submitLeadRequest({
-                    source: "contact",
-                    lang,
-                    name,
-                    ...(email ? { email } : {}),
-                    phone,
-                    request_type: interested || undefined,
-                    notes: msg,
-                  });
-                  toast.success(t("contact.received"), {
-                    id: loading,
-                    description: `${t("pricing.serial")}: ${serial}`,
-                  });
-                  form.reset();
-                  setService(undefined);
-                } catch (err: any) {
-                  toast.error(t("form.submitError"), {
-                    id: loading,
-                    description: err?.message ?? t("form.tryAgain"),
-                  });
-                }
+                // Backend removed (Neon deleted). Keep a clean client-side confirmation.
+                toast.success(t("contact.received"));
+                form.reset();
+                setService(undefined);
               }}
             >
               <div className="grid gap-2 sm:grid-cols-2">
