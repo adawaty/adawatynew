@@ -626,6 +626,70 @@ export const solutions: Solution[] = [
         "Workflow-aware ERP-lite systems: dashboards, approvals, roles, pipelines, and automation—built around how your business runs.",
     },
   },
+  {
+    id: "health-clinics",
+    slug: "health-clinics",
+    title: "Health Clinics (Trust + Booking + Intake)",
+    summary:
+      "A conversion system for clinics: trust-first positioning, high-performance pages, booking + intake, and follow-up that reduces no-shows.",
+    whoItsFor: ["Clinics", "Doctors", "Medical centers"],
+    deliverables: [
+      "Clinic positioning + service pages",
+      "Booking + intake forms + routing",
+      "WhatsApp + reminders (reduce no-shows)",
+      "Tracking: booked → showed → converted",
+      "Local SEO + AI visibility foundations",
+    ],
+    timeline: [
+      "Week 1: messaging + UX + booking rules",
+      "Week 2: build pages + intake + tracking",
+      "Week 3: launch + iteration",
+    ],
+    integrations: ["Calendly", "Google Calendar", "WhatsApp", "Analytics"],
+    faqs: [
+      {
+        q: "Can you improve booking quality?",
+        a: "Yes. We clarify offers, add pre-qualification, and route patients to the right service line—so you get fewer low-intent calls.",
+      },
+      {
+        q: "Do you support Arabic/English?",
+        a: "Yes. We build bilingual pages with proper RTL support and consistent design.",
+      },
+    ],
+    seo: {
+      title: "Clinic Websites, Booking + Intake Systems | Adawaty",
+      description:
+        "DFY clinic conversion systems: trust-first website, booking + intake, reminders, tracking, and AI-era visibility.",
+    },
+  },
+  {
+    id: "internal-tools",
+    slug: "internal-tools",
+    title: "Internal Tools (Dashboards + Workflow Apps)",
+    summary:
+      "Internal tools that remove chaos: approvals, dashboards, pipelines, roles, and automations—built around how your team actually works.",
+    whoItsFor: ["Operations-heavy SMEs", "Industry", "Agencies", "Distribution"],
+    deliverables: [
+      "Workflow mapping (as-is → to-be)",
+      "Role-based dashboards + approvals",
+      "Forms, pipelines, and audit trails",
+      "Automations + integrations",
+      "Training + documentation",
+    ],
+    timeline: ["Week 1: workflow mapping", "Week 2–4: build + rollout", "Ongoing: iteration"],
+    integrations: ["Email", "WhatsApp", "Accounting tools", "Inventory", "CRM"],
+    faqs: [
+      {
+        q: "Is this an ERP replacement?",
+        a: "Sometimes. Often teams only need the 20% that matches their workflow. We start small and expand only if needed.",
+      },
+    ],
+    seo: {
+      title: "Internal Tools  Workflow Apps (Dashboards) | Adawaty",
+      description:
+        "DFY internal tools: dashboards, approvals, workflow apps, and automation—built for adoption and measurable ops improvement.",
+    },
+  },
 ];
 
 export const industries: Industry[] = [

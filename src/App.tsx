@@ -17,6 +17,7 @@ import AiVisibilityAudit from "@/pages/AiVisibilityAudit";
 import Industries from "@/pages/Industries";
 import IndustryDetail from "@/pages/IndustryDetail";
 import PricingCalculator from "@/pages/PricingCalculator";
+import BioPage from "@/pages/BioPage";
 import Solutions from "@/pages/Solutions";
 import SolutionDetail from "@/pages/SolutionDetail";
 import For from "@/pages/For";
@@ -46,6 +47,7 @@ function AppRouter() {
         <Route path="/services/:id">{(params) => <ServiceDetail id={params.id} />}</Route>
         <Route path="/ai-visibility-audit" component={AiVisibilityAudit} />
         <Route path="/pricing-calculator" component={PricingCalculator} />
+        <Route path="/bio" component={BioPage} />
         <Route path="/work" component={Work} />
         <Route path="/work/:slug">{(params) => <CaseStudyDetail slug={params.slug} />}</Route>
         <Route path="/about" component={About} />

@@ -43,6 +43,9 @@ import {
   Settings,
   Video,
   GraduationCap,
+  Copy,
+  FileDown,
+  ExternalLink,
 } from "lucide-react";
 
 type Currency = "USD" | "EGP";
@@ -231,6 +234,155 @@ export default function PricingCalculator() {
   const [lastSerial, setLastSerial] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
 
+  const bioPreviewUrl = useMemo(() => {
+    const params = new URLSearchParams();
+    params.set("name", (contactName || "Your Name").trim());
+    params.set("headline", includeBio ? (bioType === "pro" ? "Premium bio hub" : "Bio page") : "Bio page");
+    if (contactPhone.trim()) params.set("phone", contactPhone.trim());
+    if (contactEmail.trim()) params.set("email", contactEmail.trim());
+    params.set("city", "Cairo");
+    params.set("cta", "Request scope");
+    params.set("href", "/contact");
+    return `/bio?${params.toString()}`;
+  }, [contactName, contactPhone, contactEmail, includeBio, bioType]);
+
+  function buildQuoteText(serial?: string) {
+    const addons = Object.entries(selectedAddons)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+
+    const lines = [
+      `Adawaty — Quote${serial ? ` (${serial})` : ""}`,
+      `Date: ${new Date().toLocaleString()}`,
+      "",
+      `Name: ${contactName.trim() || "—"}`,
+      `Email: ${contactEmail.trim() || "—"}`,
+      `Phone: ${contactPhone.trim() || "—"}`,
+      "",
+      `Website: ${includeWebsite ? websiteType : "No"}`,
+      `Bio page: ${includeBio ? bioType : "No"}`,
+      `Hosting: ${hostingTier} (${money(hostingTiers[hostingTier].usdPerMonth, currency)}/mo)`,
+      `Add-ons: ${addons.length ? addons.join(", ") : "None"}`,
+      "",
+      `One-time total: ${money(totals.oneTime, currency)}`,
+      `Monthly total: ${money(totals.monthly, currency)}/mo`,
+      "",
+      includeBio ? `Bio page preview: ${window.location.origin}${bioPreviewUrl}` : "",
+    ].filter(Boolean);
+
+    return lines.join("\n");
+  }
+
+  function openQuotePdf(serial?: string) {
+    const addons = Object.entries(selectedAddons)
+      .filter(([, v]) => v)
+      .map(([k]) => k);
+
+    const safe = (s: string) => (s || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+    const html = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Adawaty Quote${serial ? " — " + safe(serial) : ""}</title>
+  <style>
+    @page { size: A4; margin: 18mm; }
+    * { box-sizing: border-box; }
+    body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial; color: #0b1220; }
+    .top { display:flex; align-items:flex-start; justify-content:space-between; gap:16px; }
+    .brand { font-weight: 800; font-size: 20px; letter-spacing: -0.02em; }
+    .tag { color:#0a7a87; font-weight: 700; }
+    .pill { display:inline-block; padding:6px 10px; border:1px solid #d7e2ea; border-radius:999px; font-size: 12px; }
+    h1 { font-size: 28px; margin: 14px 0 8px; }
+    .muted { color:#506171; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-top:14px; }
+    .card { border:1px solid #d7e2ea; border-radius:14px; padding:12px 14px; }
+    .card h3 { margin:0 0 6px; font-size: 13px; letter-spacing:0.02em; text-transform: uppercase; color:#213041; }
+    .row { display:flex; justify-content:space-between; gap:12px; padding:8px 0; border-bottom:1px dashed #d7e2ea; }
+    .row:last-child { border-bottom:0; }
+    .k { color:#213041; }
+    .v { font-weight:700; }
+    .total { font-size: 18px; }
+    .foot { margin-top: 14px; font-size: 12px; color:#506171; }
+    a { color:#0a7a87; text-decoration: none; }
+    .break { height: 10px; }
+  </style>
+</head>
+<body>
+  <div class="top">
+    <div>
+      <div class="brand">Adawaty</div>
+      <div class="tag">Brand → Build → Demand</div>
+      <div class="break"></div>
+      <span class="pill">Estimate • Not a final contract</span>
+      ${serial ? `<span class="pill" style="margin-left:8px;">Serial: ${safe(serial)}</span>` : ""}
+    </div>
+    <div class="muted" style="text-align:right; font-size:12px;">
+      <div>${safe(new Date().toLocaleString())}</div>
+      <div>alazzeh.ml@gmail.com</div>
+    </div>
+  </div>
+
+  <h1>Pricing estimate</h1>
+  <div class="muted">Built from your selections. We’ll confirm scope in a quick intake call.</div>
+
+  <div class="grid">
+    <div class="card">
+      <h3>Contact</h3>
+      <div class="row"><div class="k">Name</div><div class="v">${safe(contactName.trim() || "—")}</div></div>
+      <div class="row"><div class="k">Email</div><div class="v">${safe(contactEmail.trim() || "—")}</div></div>
+      <div class="row"><div class="k">Phone</div><div class="v">${safe(contactPhone.trim() || "—")}</div></div>
+    </div>
+    <div class="card">
+      <h3>Scope</h3>
+      <div class="row"><div class="k">Website</div><div class="v">${safe(includeWebsite ? websiteType : "No")}</div></div>
+      <div class="row"><div class="k">Bio page</div><div class="v">${safe(includeBio ? bioType : "No")}</div></div>
+      <div class="row"><div class="k">Hosting</div><div class="v">${safe(hostingTier)} (${safe(money(hostingTiers[hostingTier].usdPerMonth, currency))}/mo)</div></div>
+      <div class="row"><div class="k">Add-ons</div><div class="v">${safe(addons.length ? addons.join(", ") : "None")}</div></div>
+    </div>
+  </div>
+
+  <div class="grid" style="margin-top:12px;">
+    <div class="card">
+      <h3>One-time</h3>
+      <div class="row"><div class="k">Build (website + bio)</div><div class="v">${safe(money(totals.website + totals.bio, currency))}</div></div>
+      <div class="row"><div class="k">Add-ons</div><div class="v">${safe(money(totals.addOnOneTime, currency))}</div></div>
+      <div class="row total"><div class="k">Total</div><div class="v">${safe(money(totals.oneTime, currency))}</div></div>
+    </div>
+    <div class="card">
+      <h3>Monthly</h3>
+      <div class="row"><div class="k">Hosting</div><div class="v">${safe(money(totals.hosting, currency))}/mo</div></div>
+      <div class="row"><div class="k">Care / retainers</div><div class="v">${safe(money(totals.addOnMonthly, currency))}/mo</div></div>
+      <div class="row total"><div class="k">Total</div><div class="v">${safe(money(totals.monthly, currency))}/mo</div></div>
+    </div>
+  </div>
+
+  ${includeBio ? `
+  <div class="foot">
+    Bio page preview link: <a href="${safe(bioPreviewUrl)}">${safe(bioPreviewUrl)}</a>
+  </div>
+  ` : ""}
+
+  <div class="foot">
+    Notes: Pricing is a starting estimate. Final scope, timeline, and deliverables are confirmed after intake.
+  </div>
+
+  <script>
+    window.onload = () => {
+      setTimeout(() => window.print(), 250);
+    };
+  </script>
+</body>
+</html>`;
+
+    const w = window.open("", "_blank");
+    if (!w) throw new Error("Popup blocked. Please allow popups to export PDF.");
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+  }
+
   const totals = useMemo(() => {
     const website = includeWebsite ? websiteBase[websiteType].usdOneTime : 0;
     const bio = includeBio ? bioBase[bioType].usdOneTime : 0;
@@ -259,17 +411,6 @@ export default function PricingCalculator() {
   const description =
     "Get a quick estimate for a website, personal bio page, and managed hosting — plus a guided path for internal tools, LMS, video, and custom builds.";
 
-  function downloadJson(filename: string, payload: unknown) {
-    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
 
   return (
     <SiteLayout title={t("pricing.title")} subtitle={t("pricing.subtitle")}>
@@ -735,72 +876,81 @@ export default function PricingCalculator() {
                   <Link href="/solutions">{t("pricing.estimate.seeDeliverables")}</Link>
                 </Button>
 
-                <Button
-                  type="button"
-                  variant="secondary"
-                  className="bg-white/6 hover:bg-white/10"
-                  disabled={exporting}
-                  onClick={async () => {
-                    if (!contactName.trim() || !contactEmail.trim() || !contactPhone.trim()) {
-                      toast.error(t("form.required"));
-                      return;
-                    }
-                    setExporting(true);
-                    const loading = toast.loading(t("pricing.exporting"), { duration: 15000 });
-                    try {
-                      const { serial } = await submitLeadRequest({
-                        source: "pricing-calculator",
-                        lang,
-                        name: contactName.trim(),
-                        email: contactEmail.trim(),
-                        phone: contactPhone.trim(),
-                        pricing: {
-                          category: "web",
-                          websiteType: includeWebsite ? websiteType : null,
-                          bioType: includeBio ? bioType : null,
-                          hostingTier,
-                          addOns: Object.entries(selectedAddons)
-                            .filter(([, v]) => v)
-                            .map(([k]) => k),
-                          totals,
-                          currency,
-                        },
-                      });
-                      setLastSerial(serial);
-                      downloadJson(`adawaty-quote-${serial}.json`, {
-                        serial,
-                        createdAt: new Date().toISOString(),
-                        name: contactName.trim(),
-                        email: contactEmail.trim(),
-                        phone: contactPhone.trim(),
-                        lang,
-                        pricing: {
-                          websiteType: includeWebsite ? websiteType : null,
-                          bioType: includeBio ? bioType : null,
-                          hostingTier,
-                          addOns: Object.entries(selectedAddons)
-                            .filter(([, v]) => v)
-                            .map(([k]) => k),
-                          totals,
-                          currency,
-                        },
-                      });
-                      toast.success(t("pricing.exported"), {
-                        id: loading,
-                        description: `${t("pricing.serial")}: ${serial}`,
-                      });
-                    } catch (err: any) {
-                      toast.error(t("form.submitError"), {
-                        id: loading,
-                        description: err?.message ?? t("form.tryAgain"),
-                      });
-                    } finally {
-                      setExporting(false);
-                    }
-                  }}
-                >
-                  {t("pricing.export")}
-                </Button>
+                {includeBio ? (
+                  <Button asChild variant="secondary" className="bg-white/6 hover:bg-white/10">
+                    <Link href={bioPreviewUrl}>
+                      <ExternalLink className="mr-2 h-4 w-4" aria-hidden="true" /> Preview bio page
+                    </Link>
+                  </Button>
+                ) : null}
+
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    className="bg-white/6 hover:bg-white/10"
+                    onClick={async () => {
+                      try {
+                        await navigator.clipboard.writeText(buildQuoteText(lastSerial ?? undefined));
+                        toast.success("Copied", { description: "Quote copied to clipboard" });
+                      } catch {
+                        toast.error("Copy failed", { description: "Your browser blocked clipboard access." });
+                      }
+                    }}
+                  >
+                    <Copy className="mr-2 h-4 w-4" aria-hidden="true" /> Copy quote
+                  </Button>
+
+                  <Button
+                    type="button"
+                    className="shadow-[0_0_40px_oklch(0.73_0.16_190/0.25)]"
+                    disabled={exporting}
+                    onClick={async () => {
+                      if (!contactName.trim() || !contactPhone.trim()) {
+                        toast.error(t("form.required"));
+                        return;
+                      }
+                      setExporting(true);
+                      const loading = toast.loading("Preparing PDF…", { duration: 15000 });
+                      try {
+                        const { serial } = await submitLeadRequest({
+                          source: "pricing-calculator",
+                          lang,
+                          name: contactName.trim(),
+                          ...(contactEmail.trim() ? { email: contactEmail.trim() } : {}),
+                          phone: contactPhone.trim(),
+                          pricing: {
+                            category: "web",
+                            websiteType: includeWebsite ? websiteType : null,
+                            bioType: includeBio ? bioType : null,
+                            hostingTier,
+                            addOns: Object.entries(selectedAddons)
+                              .filter(([, v]) => v)
+                              .map(([k]) => k),
+                            totals,
+                            currency,
+                            bioPreviewUrl: includeBio ? bioPreviewUrl : null,
+                          },
+                        });
+                        setLastSerial(serial);
+                        openQuotePdf(serial);
+                        toast.success("PDF ready", {
+                          id: loading,
+                          description: `${t("pricing.serial")}: ${serial}`,
+                        });
+                      } catch (err: any) {
+                        toast.error(t("form.submitError"), {
+                          id: loading,
+                          description: err?.message ?? t("form.tryAgain"),
+                        });
+                      } finally {
+                        setExporting(false);
+                      }
+                    }}
+                  >
+                    <FileDown className="mr-2 h-4 w-4" aria-hidden="true" /> Export PDF
+                  </Button>
+                </div>
               </div>
 
               <div className="mt-1 text-xs text-muted-foreground">
