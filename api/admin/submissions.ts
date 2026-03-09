@@ -43,6 +43,32 @@ function getSql() {
   return neon(url);
 }
 
+async function ensureLeadRequestsTable(sql: ReturnType<typeof neon>) {
+  await withTimeout(
+    sql/*sql*/`
+      create table if not exists lead_requests (
+        serial text primary key,
+        created_at timestamptz not null default now(),
+        source text not null,
+        lang text,
+        name text not null,
+        email text,
+        phone text not null,
+        company text,
+        request_type text,
+        pricing jsonb,
+        notes text,
+        user_agent text
+      );
+
+      create index if not exists lead_requests_created_at_idx
+        on lead_requests (created_at desc);
+    `,
+    8000,
+    "Ensure schema"
+  );
+}
+
 function getAdminToken() {
   const token = process.env.ADMIN_TOKEN;
   if (!token) throw new Error("Missing ADMIN_TOKEN env var");
@@ -61,6 +87,7 @@ export default async function handler(req: Request) {
     const offset = Math.max(Number(url.searchParams.get("offset") ?? 0) || 0, 0);
 
     const sql = getSql();
+    await ensureLeadRequestsTable(sql);
     const rows = await withTimeout(
       sql/*sql*/`
         select

@@ -36,6 +36,34 @@ function getSql() {
   return neon(url);
 }
 
+async function ensureLeadRequestsTable(sql: ReturnType<typeof neon>) {
+  // Make the deployment resilient: create table if missing.
+  // Uses simple types that work well with admin views + future extensions.
+  await withTimeout(
+    sql/*sql*/`
+      create table if not exists lead_requests (
+        serial text primary key,
+        created_at timestamptz not null default now(),
+        source text not null,
+        lang text,
+        name text not null,
+        email text,
+        phone text not null,
+        company text,
+        request_type text,
+        pricing jsonb,
+        notes text,
+        user_agent text
+      );
+
+      create index if not exists lead_requests_created_at_idx
+        on lead_requests (created_at desc);
+    `,
+    8000,
+    "Ensure schema"
+  );
+}
+
 const LeadRequestSchema = z.object({
   source: z.string().min(1),
   lang: z.string().optional(),
@@ -68,6 +96,7 @@ export default async function handler(req: Request) {
   try {
     const data = LeadRequestSchema.parse(await req.json());
     const sql = getSql();
+    await ensureLeadRequestsTable(sql);
 
     // Try a few times to avoid rare serial collisions + transient DB errors.
     for (let i = 0; i < 5; i++) {
