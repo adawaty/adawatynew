@@ -41,7 +41,7 @@ const LeadRequestSchema = z.object({
   lang: z.string().optional(),
 
   name: z.string().min(1),
-  email: z.string().email(),
+  email: z.string().email().optional().or(z.literal("")),
   phone: z.string().min(3),
   company: z.string().optional(),
 
@@ -84,7 +84,7 @@ export default async function handler(req: Request) {
           ${data.source},
           ${data.lang ?? null},
           ${data.name},
-          ${data.email},
+          ${data.email ? data.email : null},
           ${data.phone},
           ${data.company ?? null},
           ${data.request_type ?? null},

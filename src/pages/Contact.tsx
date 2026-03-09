@@ -64,7 +64,7 @@ export default function Contact() {
                     source: "contact",
                     lang,
                     name,
-                    email,
+                    ...(email ? { email } : {}),
                     phone,
                     request_type: interested || undefined,
                     notes: msg,
@@ -93,7 +93,6 @@ export default function Contact() {
                   <Input
                     id="email"
                     name="email"
-                    required
                     type="email"
                     autoComplete="email"
                     spellCheck={false}

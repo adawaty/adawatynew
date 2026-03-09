@@ -45,8 +45,6 @@ export default function SiteHeader() {
               <LanguageSwitcher />
               <Link className="premium-focus hover:text-foreground" href="/ai-visibility-audit">{t("nav.aiAudit")}</Link>
               <span className="opacity-50">•</span>
-              <Link className="premium-focus hover:text-foreground" href="/pricing-calculator">{t("nav.pricingCalc")}</Link>
-              <span className="opacity-50">•</span>
               <Link className="premium-focus hover:text-foreground" href="/contact">{t("cta.requestScope")}</Link>
             </div>
           </div>
@@ -54,13 +52,13 @@ export default function SiteHeader() {
       </div>
       <div className="glass bg-background/60">
         <div className="mx-auto max-w-6xl px-4 sm:px-6">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="/" className="group flex items-center gap-2">
+          <div className="flex h-16 items-center justify-between overflow-x-hidden">
+            <Link href="/" className="group flex items-center gap-2 min-w-0">
               <div className="h-9 w-9 rounded-xl bg-primary/20 ring-1 ring-primary/40 grid place-items-center">
                 <div className="h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_22px_oklch(0.73_0.16_190/0.55)]" />
               </div>
-              <div className="leading-tight">
-                <div className="font-semibold tracking-tight">{brandName}</div>
+              <div className="leading-tight min-w-0">
+                <div className="font-semibold tracking-tight truncate max-w-[36vw] sm:max-w-none">{brandName}</div>
                 <div className="text-xs text-muted-foreground -mt-0.5">
                   {dir === "rtl" ? "براند ← بناء ← طلب" : "Brand → Build → Demand"}
                 </div>
@@ -84,9 +82,6 @@ export default function SiteHeader() {
             </nav>
 
             <div className="flex items-center gap-2">
-              <Button asChild variant="secondary" className="hidden sm:inline-flex bg-white/6 hover:bg-white/10">
-                <Link href="/pricing-calculator">{t("nav.pricing")}</Link>
-              </Button>
 
               <Button asChild className="hidden sm:inline-flex">
                 <Link href="/contact">
@@ -117,10 +112,6 @@ export default function SiteHeader() {
                 <div className="flex flex-wrap gap-2 px-3">
                   <Link className="text-xs text-muted-foreground hover:text-foreground" href="/ai-visibility-audit" onClick={() => setOpen(false)}>
                     {t("nav.aiAudit")}
-                  </Link>
-                  <span className="text-xs text-muted-foreground/50">•</span>
-                  <Link className="text-xs text-muted-foreground hover:text-foreground" href="/pricing-calculator" onClick={() => setOpen(false)}>
-                    {t("nav.pricing")}
                   </Link>
                   <span className="text-xs text-muted-foreground/50">•</span>
                   <Link className="text-xs text-muted-foreground hover:text-foreground" href="/contact" onClick={() => setOpen(false)}>

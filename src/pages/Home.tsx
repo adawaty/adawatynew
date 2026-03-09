@@ -118,7 +118,7 @@ export default function Home() {
             <div className="absolute inset-0 bg-gradient-to-r from-background via-background/85 to-background/30" />
           </div>
 
-          <div className="relative grid gap-10 px-6 py-12 sm:px-10 sm:py-16 lg:grid-cols-[1.1fr_0.9fr]">
+          <div className="relative grid gap-10 px-5 py-10 sm:px-10 sm:py-16 lg:grid-cols-[1.1fr_0.9fr]">
             <motion.div
               variants={{ hidden: {}, show: { transition: { staggerChildren: reduceMotion ? 0 : 0.08 } } }}
               initial="hidden"
@@ -132,7 +132,7 @@ export default function Home() {
               </motion.div>
               <motion.h1
                 variants={fade}
-                className="mt-4 text-4xl sm:text-6xl font-semibold leading-[1.05] text-balance"
+                className="mt-4 text-3xl sm:text-6xl font-semibold leading-[1.08] text-balance"
               >
                 {t("hero.h1")}
                 <span className="text-muted-foreground"> {t("hero.h1.sub")}</span>

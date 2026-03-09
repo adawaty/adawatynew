@@ -1,9 +1,9 @@
 export type LeadRequestPayload = {
-  source: string; // e.g. "pricing-calculator" | "contact"
+  source: string; // e.g. "contact"
   lang?: string;
 
   name: string;
-  email: string;
+  email?: string;
   phone: string;
   company?: string;
   request_type?: string;
@@ -23,6 +23,9 @@ async function fetchWithTimeout(input: RequestInfo, init: RequestInit, ms: numbe
 }
 
 export async function submitLeadRequest(payload: LeadRequestPayload): Promise<{ serial: string }> {
+  // contacts-only guard: ignore any accidental pricing payload
+  const safePayload = { ...payload } as any;
+  delete safePayload.pricing;
   let res: Response;
   try {
     res = await fetchWithTimeout(
@@ -30,7 +33,7 @@ export async function submitLeadRequest(payload: LeadRequestPayload): Promise<{ 
       {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(safePayload),
       },
       12000
     );
