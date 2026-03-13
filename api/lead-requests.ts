@@ -1,12 +1,17 @@
-// POST /api/lead-requests — accepts form submissions from Contact & Pricing pages
+// POST /api/lead-requests — accepts form submissions from Contact, Pricing & Newsletter
 import { neon } from "@neondatabase/serverless";
 import { z } from "zod";
 
+const CORS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type",
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "no-store",
+};
+
 function json(status: number, body: unknown) {
-  return new Response(JSON.stringify(body), {
-    status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store" },
-  });
+  return new Response(JSON.stringify(body), { status, headers: CORS });
 }
 
 async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise<T> {
@@ -20,7 +25,7 @@ async function withTimeout<T>(p: Promise<T>, ms: number, label: string): Promise
 
 function getSql() {
   const url = process.env.DATABASE_URL || process.env.DATABASE_URL_POOLER;
-  if (!url) throw new Error("Missing DATABASE_URL env var");
+  if (!url) throw new Error("DATABASE_URL environment variable is not set. Please configure it in Vercel → Settings → Environment Variables.");
   return neon(url);
 }
 
@@ -50,9 +55,9 @@ async function ensureSchema(sql: ReturnType<typeof neon>) {
 const Schema = z.object({
   source:       z.string().min(1),
   lang:         z.string().optional(),
-  name:         z.string().min(1),
+  name:         z.string().min(1, "Name is required"),
   email:        z.string().email().optional().or(z.literal("")),
-  phone:        z.string().min(3),
+  phone:        z.string().min(2, "Phone is required"),   // allows "newsletter" / short codes
   company:      z.string().optional(),
   request_type: z.string().optional(),
   pricing:      z.unknown().optional(),
@@ -66,15 +71,36 @@ function makeSerial() {
 }
 
 export default async function handler(req: Request) {
-  if (req.method !== "POST") return json(405, { ok: false, error: "Method Not Allowed" });
+  // Handle CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS });
+  }
+
+  if (req.method !== "POST") {
+    return json(405, { ok: false, error: "Method Not Allowed" });
+  }
 
   try {
-    const parsed = Schema.safeParse(await req.json());
-    if (!parsed.success) return json(400, { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid input" });
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return json(400, { ok: false, error: "Invalid JSON body" });
+    }
+
+    const parsed = Schema.safeParse(body);
+    if (!parsed.success) {
+      const msg = parsed.error.issues.map(i => i.message).join("; ");
+      return json(400, { ok: false, error: `Validation failed: ${msg}` });
+    }
+
     const data = parsed.data;
     const sql = getSql();
+
+    // Ensure table exists (idempotent, fast if already exists)
     await ensureSchema(sql);
 
+    // Retry up to 5 times to handle serial collisions
     for (let i = 0; i < 5; i++) {
       const serial = makeSerial();
       try {
@@ -91,11 +117,21 @@ export default async function handler(req: Request) {
           on conflict (serial) do nothing
           returning serial;
         `, 8000, "insertLead");
-        if (Array.isArray(rows) && rows.length > 0) return json(200, { ok: true, serial: rows[0].serial });
-      } catch { await new Promise(r => setTimeout(r, 150 * (i + 1))); }
+
+        if (Array.isArray(rows) && rows.length > 0) {
+          return json(200, { ok: true, serial: rows[0].serial });
+        }
+        // Serial collision — retry
+      } catch (dbErr: any) {
+        if (i === 4) throw dbErr; // Rethrow on last attempt
+        await new Promise(r => setTimeout(r, 150 * (i + 1)));
+      }
     }
-    return json(500, { ok: false, error: "Could not allocate serial" });
+
+    return json(500, { ok: false, error: "Could not allocate a unique reference number. Please try again." });
+
   } catch (err: any) {
-    return json(500, { ok: false, error: err?.message ?? "Server error" });
+    console.error("[lead-requests] Error:", err?.message);
+    return json(500, { ok: false, error: err?.message ?? "Internal server error" });
   }
 }

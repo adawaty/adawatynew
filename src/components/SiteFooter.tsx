@@ -44,22 +44,35 @@ export default function SiteFooter() {
 
   const handleNewsletter = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim()) return;
+
+    // Prevent double-submit
+    if (loading || subscribed) return;
+
+    const trimmed = email.trim();
+    if (!trimmed) { toast.error("Please enter your email address."); return; }
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(trimmed)) {
+      toast.error("Please enter a valid email address.");
+      return;
+    }
+
     setLoading(true);
     try {
-      await insertLead({
+      const result = await insertLead({
         source: "newsletter",
-        name: email.trim().split("@")[0] ?? "subscriber",
-        email: email.trim(),
-        phone: "n/a",
+        name: trimmed.split("@")[0] ?? "subscriber",
+        email: trimmed,
+        phone: "newsletter",
         request_type: "newsletter",
         notes: "Footer newsletter signup",
       });
-      setSubscribed(true);
-      toast.success("You're on the list! We'll be in touch.");
-    } catch {
-      toast.success("You're on the list! We'll be in touch.");
-      setSubscribed(true);
+      if (result.ok) {
+        setSubscribed(true);
+        toast.success("You're on the list! We'll be in touch.");
+      } else {
+        toast.error(result.error ?? "Could not subscribe. Please try again.");
+      }
+    } catch (err: any) {
+      toast.error(err?.message ?? "Network error. Please try again.");
     } finally {
       setLoading(false);
     }

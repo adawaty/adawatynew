@@ -234,6 +234,8 @@ export default function PricingCalculator() {
   const [contactPhone, setContactPhone] = useState<string>("");
   const [lastSerial, setLastSerial] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [submittingLead, setSubmittingLead] = useState(false);
+  const [leadSubmitted, setLeadSubmitted] = useState(false);
 
   const bioPreviewUrl = useMemo(() => {
     const params = new URLSearchParams();
@@ -716,33 +718,43 @@ export default function PricingCalculator() {
                         <Button
                           size="lg"
                           className="shadow-[0_0_40px_oklch(0.73_0.16_190/0.25)]"
+                          disabled={submittingLead || leadSubmitted}
                           onClick={async () => {
-                            if (!contactName.trim() || !contactEmail.trim() || !contactPhone.trim()) {
+                            if (submittingLead) return;
+                            if (!contactName.trim() || !contactPhone.trim()) {
                               toast.error(t("form.required"));
                               return;
                             }
-                            // Submit to Supabase
-                            await insertLead({
-                              source: "pricing",
-                              name: contactName.trim(),
-                              email: contactEmail.trim(),
-                              phone: contactPhone.trim(),
-                              request_type: customNeed || "custom-solution",
-                              notes: [
-                                customNotes,
-                                customBudget && `Budget: ${customBudget}`,
-                                customTimeline && `Timeline: ${customTimeline}`,
-                              ].filter(Boolean).join("\n"),
-                            });
-                            toast.success(t("pricing.systems.submitted"), {
-                              description: t("pricing.systems.submittedDesc"),
-                            });
-                            setContactName("");
-                            setContactEmail("");
-                            setContactPhone("");
-                            setCustomBudget("");
-                            setCustomTimeline("");
-                            setCustomNotes("");
+                            setSubmittingLead(true);
+                            try {
+                              const result = await insertLead({
+                                source: "pricing",
+                                name: contactName.trim(),
+                                email: contactEmail.trim() || undefined,
+                                phone: contactPhone.trim(),
+                                request_type: customNeed || "custom-solution",
+                                notes: [
+                                  customNotes,
+                                  customBudget && `Budget: ${customBudget}`,
+                                  customTimeline && `Timeline: ${customTimeline}`,
+                                ].filter(Boolean).join("\n"),
+                              });
+                              if (result.ok) {
+                                setLeadSubmitted(true);
+                                toast.success(t("pricing.systems.submitted"), {
+                                  description: `Ref: ${result.serial}`,
+                                });
+                                setCustomBudget("");
+                                setCustomTimeline("");
+                                setCustomNotes("");
+                              } else {
+                                toast.error(result.error ?? "Could not submit. Please try again.");
+                              }
+                            } catch (err: any) {
+                              toast.error(err?.message ?? "Network error. Please try again.");
+                            } finally {
+                              setSubmittingLead(false);
+                            }
                           }}
                         >
                           {t("pricing.systems.submit")} <ArrowRight className="ml-2 h-4 w-4" />
@@ -903,13 +915,13 @@ export default function PricingCalculator() {
                       setExporting(true);
                       const loading = toast.loading("Preparing PDF…", { duration: 15000 });
                       try {
-                        // Submit to Supabase + generate serial
                         const serial = `ADW-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
                         setLastSerial(serial);
-                        // Fire-and-forget Supabase insert
-                        insertLead({
+                        // Save lead to Neon — await so we know it was recorded
+                        const result = await insertLead({
                           source: "pricing",
                           name: contactName.trim(),
+                          email: contactEmail.trim() || undefined,
                           phone: contactPhone.trim(),
                           request_type: "quote-export",
                           pricing: {
@@ -919,11 +931,15 @@ export default function PricingCalculator() {
                             currency,
                           },
                           notes: buildQuoteText(serial),
-                        }).catch(() => {/* silent */});
+                        });
+                        if (!result.ok) {
+                          // Non-blocking warning — still open PDF
+                          console.warn("[pricing] insertLead failed:", result.error);
+                        }
                         openQuotePdf(serial);
                         toast.success("PDF ready", {
                           id: loading,
-                          description: `${t("pricing.serial")}: ${serial}`,
+                          description: `${t("pricing.serial")}: ${result.serial ?? serial}`,
                         });
                       } catch (err: any) {
                         toast.error(t("form.submitError"), {

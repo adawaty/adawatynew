@@ -48,6 +48,10 @@ export default function Contact() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+
+    // Hard guard: never allow concurrent submissions
+    if (submitting) return;
+
     const form = e.currentTarget;
     const fd = new FormData(form);
 
@@ -57,10 +61,8 @@ export default function Contact() {
     const msg = String(fd.get("message") ?? "").trim();
     const interested = String(fd.get("service") ?? "").trim();
 
-    if (!phone) {
-      toast.error(t("form.required"));
-      return;
-    }
+    if (!name) { toast.error("Please enter your name."); return; }
+    if (!phone) { toast.error("Please enter your phone number."); return; }
 
     setSubmitting(true);
     try {
@@ -81,15 +83,11 @@ export default function Contact() {
         form.reset();
         setService(undefined);
       } else {
-        // Graceful fallback — still confirm to user
-        setSubmitted(true);
-        toast.success(t("contact.received"));
-        form.reset();
-        setService(undefined);
+        // API returned an error — show it, do NOT mark as submitted
+        toast.error(result.error ?? "Something went wrong. Please try again.");
       }
-    } catch {
-      setSubmitted(true);
-      toast.success(t("contact.received"));
+    } catch (err: any) {
+      toast.error(err?.message ?? "Network error. Please check your connection and try again.");
     } finally {
       setSubmitting(false);
     }
