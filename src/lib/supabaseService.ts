@@ -3,7 +3,7 @@
   Works gracefully when env vars are missing (dev without Supabase).
 */
 
-import { supabase } from "./supabaseClient";
+import { supabase, supabaseReady } from "./supabaseClient";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -33,6 +33,10 @@ export interface InsertLeadResult {
 // ── Insert ────────────────────────────────────────────────────────────────────
 
 export async function insertLead(payload: LeadRequest): Promise<InsertLeadResult> {
+  if (!supabaseReady) {
+    console.info("[supabase] insertLead skipped — not configured");
+    return { ok: true, id: undefined }; // graceful no-op
+  }
   try {
     const { data, error } = await supabase
       .from("lead_requests")
@@ -71,6 +75,7 @@ export interface FetchLeadsResult {
 }
 
 export async function fetchLeads(opts: FetchLeadsOptions = {}): Promise<FetchLeadsResult> {
+  if (!supabaseReady) return { ok: false, data: [], count: 0, error: "Supabase not configured" };
   try {
     const { limit = 50, offset = 0, status, source, search } = opts;
 
@@ -108,6 +113,7 @@ export async function updateLeadStatus(
   id: string,
   status: LeadRequest["status"]
 ): Promise<{ ok: boolean; error?: string }> {
+  if (!supabaseReady) return { ok: false, error: "Supabase not configured" };
   try {
     const { error } = await supabase
       .from("lead_requests")
@@ -124,6 +130,7 @@ export async function updateLeadStatus(
 // ── Delete ────────────────────────────────────────────────────────────────────
 
 export async function deleteLead(id: string): Promise<{ ok: boolean; error?: string }> {
+  if (!supabaseReady) return { ok: false, error: "Supabase not configured" };
   try {
     const { error } = await supabase.from("lead_requests").delete().eq("id", id);
     if (error) return { ok: false, error: error.message };
@@ -144,6 +151,7 @@ export interface LeadStats {
 }
 
 export async function fetchLeadStats(): Promise<{ ok: boolean; stats?: LeadStats; error?: string }> {
+  if (!supabaseReady) return { ok: false, error: "Supabase not configured" };
   try {
     const { data, error } = await supabase
       .from("lead_requests")

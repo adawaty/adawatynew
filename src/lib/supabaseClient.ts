@@ -1,17 +1,30 @@
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
 const url = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const anonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 
-if (!url || !anonKey) {
+const configured = Boolean(url && anonKey);
+
+if (!configured) {
   // eslint-disable-next-line no-console
-  console.warn("Supabase env vars missing: VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY");
+  console.warn(
+    "[Adawaty] Supabase not configured — set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY. " +
+      "Forms will degrade gracefully."
+  );
 }
 
-export const supabase = createClient(url ?? "", anonKey ?? "", {
+// Use a valid placeholder URL so createClient() never throws.
+// All actual requests will fail (network error) which we catch in supabaseService.ts.
+const SAFE_URL = url && url.startsWith("https://") ? url : "https://placeholder.supabase.co";
+const SAFE_KEY = anonKey ?? "placeholder-anon-key";
+
+export const supabase: SupabaseClient = createClient(SAFE_URL, SAFE_KEY, {
   auth: {
     persistSession: false,
     autoRefreshToken: false,
     detectSessionInUrl: false,
   },
 });
+
+/** True only when real credentials are present */
+export const supabaseReady = configured;
