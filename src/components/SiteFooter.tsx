@@ -2,7 +2,7 @@
 Cairo Circuit Futurism — SiteFooter (enhanced)
 - Animated gradient mesh background
 - Social links + status indicator
-- Newsletter input with Supabase hook
+- Newsletter input via Neon API
 - Circuit line decorations
 */
 
@@ -13,7 +13,7 @@ import { Mail, Phone, ArrowUpRight, Twitter, Linkedin, Github, Globe, Send, Chec
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
-import { supabase } from "@/lib/supabaseClient";
+import { insertLead } from "@/lib/neonService";
 
 const footerNav = {
   Studio: [
@@ -47,9 +47,11 @@ export default function SiteFooter() {
     if (!email.trim()) return;
     setLoading(true);
     try {
-      await supabase.from("lead_requests").insert({
+      await insertLead({
         source: "newsletter",
+        name: email.trim().split("@")[0] ?? "subscriber",
         email: email.trim(),
+        phone: "n/a",
         request_type: "newsletter",
         notes: "Footer newsletter signup",
       });

@@ -10,7 +10,7 @@ Pricing notes:
 */
 
 import { useMemo, useState } from "react";
-import { insertLead } from "@/lib/supabaseService";
+import { insertLead } from "@/lib/neonService";
 import SiteLayout from "@/components/SiteLayout";
 import SeoHead from "@/components/SeoHead";
 import { Card } from "@/components/ui/card";

@@ -1,7 +1,7 @@
 /*
 Cairo Circuit Futurism — Admin Dashboard
-- View, filter, search & update lead_requests from Supabase
-- Token-gated (VITE_ADMIN_TOKEN or any password in dev)
+- View, filter, search & update lead_requests via Neon Postgres API
+- Token-gated (ADMIN_TOKEN env var)
 - Stats overview + table + status management
 */
 
@@ -24,9 +24,10 @@ import {
   fetchLeadStats,
   updateLeadStatus,
   deleteLead,
+  getAdminToken,
   type LeadRequest,
   type LeadStats,
-} from "@/lib/supabaseService";
+} from "@/lib/neonService";
 import {
   Search,
   RefreshCw,
@@ -167,10 +168,11 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const load = useCallback(async (showRefreshing = false) => {
     if (showRefreshing) setRefreshing(true); else setLoading(true);
+    const t = getAdminToken();
     try {
       const [leadsRes, statsRes] = await Promise.all([
-        fetchLeads({ limit: PAGE_SIZE, offset: page * PAGE_SIZE, status: statusFilter, source: sourceFilter, search }),
-        fetchLeadStats(),
+        fetchLeads({ limit: PAGE_SIZE, offset: page * PAGE_SIZE, status: statusFilter, source: sourceFilter, search, token: t }),
+        fetchLeadStats(t),
       ]);
       if (leadsRes.ok) { setLeads(leadsRes.data); setTotal(leadsRes.count); }
       if (statsRes.ok && statsRes.stats) setStats(statsRes.stats);
@@ -183,7 +185,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   useEffect(() => { load(); }, [load]);
 
   const handleStatusChange = async (id: string, status: LeadRequest["status"]) => {
-    const res = await updateLeadStatus(id, status);
+    const res = await updateLeadStatus(id, status, getAdminToken());
     if (res.ok) {
       setLeads((prev) => prev.map((l) => l.id === id ? { ...l, status } : l));
       toast.success(`Status updated to "${status}"`);
@@ -194,7 +196,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this lead? This cannot be undone.")) return;
-    const res = await deleteLead(id);
+    const res = await deleteLead(id, getAdminToken());
     if (res.ok) {
       setLeads((prev) => prev.filter((l) => l.id !== id));
       setTotal((v) => v - 1);
@@ -500,7 +502,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </Card>
 
         <p className="mt-4 text-center text-xs text-muted-foreground">
-          Click any row to expand details • Changes save instantly to Supabase
+          Click any row to expand details • Changes save instantly to Neon Postgres
         </p>
       </main>
     </div>

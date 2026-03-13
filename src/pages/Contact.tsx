@@ -1,6 +1,6 @@
 /*
-Cairo Circuit Futurism — Contact (Supabase-connected + enhanced UI)
-- Form submits to supabase lead_requests table
+Cairo Circuit Futurism — Contact (Neon-connected + enhanced UI)
+- Form submits to /api/lead-requests → Neon Postgres lead_requests table
 - Real-time validation, animated feedback, loading state
 - Enhanced cards with glow borders
 */
@@ -23,7 +23,7 @@ import {
 import { toast } from "sonner";
 import { useState } from "react";
 import { useI18n } from "@/contexts/I18nContext";
-import { insertLead } from "@/lib/supabaseService";
+import { insertLead } from "@/lib/neonService";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Mail,
@@ -75,7 +75,7 @@ export default function Contact() {
       });
 
       if (result.ok) {
-        setLeadId(result.id);
+        setLeadId(result.serial);
         setSubmitted(true);
         toast.success(t("contact.received"));
         form.reset();
@@ -148,7 +148,7 @@ export default function Contact() {
                     </p>
                     {leadId && (
                       <p className="mt-3 text-xs text-muted-foreground/60 font-mono">
-                        Ref: {leadId.slice(0, 8).toUpperCase()}
+                        Ref: {leadId.slice(0, 12).toUpperCase()}
                       </p>
                     )}
                   </div>
