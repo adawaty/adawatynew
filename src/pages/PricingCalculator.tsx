@@ -10,6 +10,7 @@ Pricing notes:
 */
 
 import { useMemo, useState } from "react";
+import { insertLead } from "@/lib/supabaseService";
 import SiteLayout from "@/components/SiteLayout";
 import SeoHead from "@/components/SeoHead";
 import { Card } from "@/components/ui/card";
@@ -720,7 +721,19 @@ export default function PricingCalculator() {
                               toast.error(t("form.required"));
                               return;
                             }
-                            // Backend removed (Neon deleted).
+                            // Submit to Supabase
+                            await insertLead({
+                              source: "pricing",
+                              name: contactName.trim(),
+                              email: contactEmail.trim(),
+                              phone: contactPhone.trim(),
+                              request_type: customNeed || "custom-solution",
+                              notes: [
+                                customNotes,
+                                customBudget && `Budget: ${customBudget}`,
+                                customTimeline && `Timeline: ${customTimeline}`,
+                              ].filter(Boolean).join("\n"),
+                            });
                             toast.success(t("pricing.systems.submitted"), {
                               description: t("pricing.systems.submittedDesc"),
                             });
@@ -890,9 +903,23 @@ export default function PricingCalculator() {
                       setExporting(true);
                       const loading = toast.loading("Preparing PDF…", { duration: 15000 });
                       try {
-                        // Backend removed (Neon deleted). Generate a local serial for reference.
-                        const serial = `LOCAL-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
+                        // Submit to Supabase + generate serial
+                        const serial = `ADW-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
                         setLastSerial(serial);
+                        // Fire-and-forget Supabase insert
+                        insertLead({
+                          source: "pricing",
+                          name: contactName.trim(),
+                          phone: contactPhone.trim(),
+                          request_type: "quote-export",
+                          pricing: {
+                            serial,
+                            oneTime: totals.oneTime,
+                            monthly: totals.monthly,
+                            currency,
+                          },
+                          notes: buildQuoteText(serial),
+                        }).catch(() => {/* silent */});
                         openQuotePdf(serial);
                         toast.success("PDF ready", {
                           id: loading,
