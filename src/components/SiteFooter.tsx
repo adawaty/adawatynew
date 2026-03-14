@@ -2,18 +2,17 @@
 Cairo Circuit Futurism — SiteFooter (enhanced)
 - Animated gradient mesh background
 - Social links + status indicator
-- Newsletter input via Neon API
+- Newsletter via mailto (no backend required)
 - Circuit line decorations
 */
 
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Mail, Phone, ArrowUpRight, Twitter, Linkedin, Github, Globe, Send, CheckCircle2 } from "lucide-react";
+import { Mail, ArrowUpRight, Twitter, Linkedin, Globe, Send, CheckCircle2, MessageCircle } from "lucide-react";
 import { motion } from "framer-motion";
 import { useState } from "react";
 import { toast } from "sonner";
-import { insertLead } from "@/lib/neonService";
 
 const footerNav = {
   Studio: [
@@ -42,10 +41,9 @@ export default function SiteFooter() {
   const [subscribed, setSubscribed] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  const handleNewsletter = async (e: React.FormEvent) => {
+  const handleNewsletter = (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Prevent double-submit
     if (loading || subscribed) return;
 
     const trimmed = email.trim();
@@ -56,26 +54,13 @@ export default function SiteFooter() {
     }
 
     setLoading(true);
-    try {
-      const result = await insertLead({
-        source: "newsletter",
-        name: trimmed.split("@")[0] ?? "subscriber",
-        email: trimmed,
-        phone: "newsletter",
-        request_type: "newsletter",
-        notes: "Footer newsletter signup",
-      });
-      if (result.ok) {
-        setSubscribed(true);
-        toast.success("You're on the list! We'll be in touch.");
-      } else {
-        toast.error(result.error ?? "Could not subscribe. Please try again.");
-      }
-    } catch (err: any) {
-      toast.error(err?.message ?? "Network error. Please try again.");
-    } finally {
-      setLoading(false);
-    }
+    // Send via mailto — no backend required
+    const subject = encodeURIComponent("Adawaty newsletter subscription");
+    const body = encodeURIComponent(`Hi!\n\nPlease add me to your newsletter.\n\nEmail: ${trimmed}`);
+    window.location.href = `mailto:alazzeh.ml@gmail.com?subject=${subject}&body=${body}`;
+    setSubscribed(true);
+    setLoading(false);
+    toast.success("Opening your email client — thanks!");
   };
 
   return (
@@ -181,8 +166,8 @@ export default function SiteFooter() {
                   size="sm"
                   className="bg-white/6 hover:bg-white/10 text-xs"
                 >
-                  <a href="tel:+201000000000">
-                    <Phone className="mr-1.5 h-3.5 w-3.5" /> Call
+                  <a href="https://wa.me/13393991355" target="_blank" rel="noopener">
+                    <MessageCircle className="mr-1.5 h-3.5 w-3.5" /> WhatsApp
                   </a>
                 </Button>
                 <Button

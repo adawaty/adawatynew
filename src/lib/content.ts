@@ -185,6 +185,18 @@ export const clients: Client[] = [
     url: "https://www.coursatee.com/",
     industry: "Education (exam prep)",
   },
+  {
+    id: "aithub",
+    name: "AI Hub (AiThub.net)",
+    url: "https://aithub.net/",
+    industry: "EdTech / AI Training Center",
+  },
+  {
+    id: "mrhesham",
+    name: "Mr. Hesham (MrHesham.com)",
+    url: "https://mrhesham.com/",
+    industry: "Education (online tutoring)",
+  },
 ];
 
 export const services: Service[] = [
@@ -988,6 +1000,72 @@ export const caseStudies: CaseStudy[] = [
       "AEO/LLMSEO",
       "Analytics instrumentation",
     ],
+  },
+  {
+    slug: "meteory-fire-safety",
+    title: "Meteory Fire Safety — Industrial Web Presence",
+    category: "Web",
+    highlightMetric: "Trust + booking clarity",
+    summary:
+      "Transformed a fire safety manufacturer's online presence from a static brochure to a conversion-ready service platform.",
+    challenge:
+      "Meteory relied on DMs and phone for bookings. Their website failed to convey pricing, certifications, or service scope — limiting Google-driven conversions and reducing credibility with enterprise clients.",
+    solution: [
+      "Redesigned information architecture around key service offerings",
+      "Added pricing clarity, certification badges, and trust signals",
+      "Built a streamlined booking/inquiry flow with automated confirmations",
+      "Optimized for local SEO in Cairo and regional fire safety queries",
+    ],
+    results: [
+      "Clear service + pricing pages reduced pre-sale friction",
+      "Booking flow reduced manual follow-up by over 60%",
+      "Local search visibility improved for fire safety queries",
+    ],
+    tools: ["Web build", "Local SEO", "Booking flow", "Brand system"],
+  },
+  {
+    slug: "aithub-edtech",
+    title: "AI Hub (AiThub.net) — EdTech Platform Launch",
+    category: "Launch",
+    highlightMetric: "AI training center online",
+    summary:
+      "Launched the web presence for a cutting-edge AI and information technology training center, positioning it as a leader in AI education in the Arab world.",
+    challenge:
+      "AiThub needed to stand out in a crowded EdTech market, communicate complex AI training programs clearly, and attract both individual learners and corporate training clients.",
+    solution: [
+      "Crafted a clear positioning strategy: AI training for professionals and organizations",
+      "Designed an intuitive course catalog with clear learning paths",
+      "Built a bilingual (Arabic/English) website optimized for search",
+      "Added corporate inquiry forms and social proof elements",
+    ],
+    results: [
+      "Professional online presence launched on schedule",
+      "Course offerings clearly communicated to target audience",
+      "Bilingual SEO foundations in place for organic discovery",
+    ],
+    tools: ["Web build", "Brand positioning", "Bilingual SEO", "Content system"],
+  },
+  {
+    slug: "mrhesham-education",
+    title: "Mr. Hesham — Personal Brand & Online Tutoring",
+    category: "Branding",
+    highlightMetric: "Brand clarity + student trust",
+    summary:
+      "Built a premium personal brand and web platform for a leading Egyptian online educator, converting social followers into enrolled students.",
+    challenge:
+      "Mr. Hesham had a loyal social media following but lacked a centralized hub to convert followers into paying students. The brand was fragmented across platforms with no consistent visual identity.",
+    solution: [
+      "Defined personal brand positioning: credible, approachable expert",
+      "Designed a cohesive visual identity (colors, typography, templates)",
+      "Built a streamlined enrollment and course discovery platform",
+      "Created an SEO-optimized content hub for educational queries",
+    ],
+    results: [
+      "Centralized brand hub replaced scattered social content",
+      "Clear enrollment flow increased student conversions",
+      "Personal brand became the go-to destination for students",
+    ],
+    tools: ["Personal branding", "Web build", "SEO", "Content system"],
   },
 ];
 

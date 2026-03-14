@@ -102,8 +102,8 @@ export default function SiteHeader() {
                 alazzeh.ml@gmail.com
               </a>
               <span className="opacity-40">•</span>
-              <a className="premium-focus hover:text-foreground transition-colors" href="tel:+201000000000">
-                +20 100 000 0000
+              <a className="premium-focus hover:text-foreground transition-colors" href="https://wa.me/13393991355" target="_blank" rel="noopener">
+                +1 (339) 399-1355
               </a>
             </div>
             <div className="flex items-center gap-2">

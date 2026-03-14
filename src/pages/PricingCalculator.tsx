@@ -10,7 +10,6 @@ Pricing notes:
 */
 
 import { useMemo, useState } from "react";
-import { insertLead } from "@/lib/neonService";
 import SiteLayout from "@/components/SiteLayout";
 import SeoHead from "@/components/SeoHead";
 import { Card } from "@/components/ui/card";
@@ -719,42 +718,30 @@ export default function PricingCalculator() {
                           size="lg"
                           className="shadow-[0_0_40px_oklch(0.73_0.16_190/0.25)]"
                           disabled={submittingLead || leadSubmitted}
-                          onClick={async () => {
+                          onClick={() => {
                             if (submittingLead) return;
                             if (!contactName.trim() || !contactPhone.trim()) {
                               toast.error(t("form.required"));
                               return;
                             }
                             setSubmittingLead(true);
-                            try {
-                              const result = await insertLead({
-                                source: "pricing",
-                                name: contactName.trim(),
-                                email: contactEmail.trim() || undefined,
-                                phone: contactPhone.trim(),
-                                request_type: customNeed || "custom-solution",
-                                notes: [
-                                  customNotes,
-                                  customBudget && `Budget: ${customBudget}`,
-                                  customTimeline && `Timeline: ${customTimeline}`,
-                                ].filter(Boolean).join("\n"),
-                              });
-                              if (result.ok) {
-                                setLeadSubmitted(true);
-                                toast.success(t("pricing.systems.submitted"), {
-                                  description: `Ref: ${result.serial}`,
-                                });
-                                setCustomBudget("");
-                                setCustomTimeline("");
-                                setCustomNotes("");
-                              } else {
-                                toast.error(result.error ?? "Could not submit. Please try again.");
-                              }
-                            } catch (err: any) {
-                              toast.error(err?.message ?? "Network error. Please try again.");
-                            } finally {
-                              setSubmittingLead(false);
-                            }
+                            // Send via WhatsApp — no backend required
+                            const msg = [
+                              `Hi Adawaty! 👋`,
+                              `Name: ${contactName.trim()}`,
+                              `Phone: ${contactPhone.trim()}`,
+                              contactEmail.trim() ? `Email: ${contactEmail.trim()}` : "",
+                              `Need: ${customNeed || "custom-solution"}`,
+                              customBudget ? `Budget: ${customBudget}` : "",
+                              customTimeline ? `Timeline: ${customTimeline}` : "",
+                              customNotes ? `Notes: ${customNotes}` : "",
+                            ].filter(Boolean).join("\n");
+                            window.open(`https://wa.me/13393991355?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+                            setLeadSubmitted(true);
+                            toast.success(t("pricing.systems.submitted"), {
+                              description: "Opening WhatsApp to send your request.",
+                            });
+                            setSubmittingLead(false);
                           }}
                         >
                           {t("pricing.systems.submit")} <ArrowRight className="ml-2 h-4 w-4" />
@@ -917,29 +904,10 @@ export default function PricingCalculator() {
                       try {
                         const serial = `ADW-${new Date().toISOString().slice(0, 10).replace(/-/g, "")}-${Math.random().toString(36).slice(2, 8).toUpperCase()}`;
                         setLastSerial(serial);
-                        // Save lead to Neon — await so we know it was recorded
-                        const result = await insertLead({
-                          source: "pricing",
-                          name: contactName.trim(),
-                          email: contactEmail.trim() || undefined,
-                          phone: contactPhone.trim(),
-                          request_type: "quote-export",
-                          pricing: {
-                            serial,
-                            oneTime: totals.oneTime,
-                            monthly: totals.monthly,
-                            currency,
-                          },
-                          notes: buildQuoteText(serial),
-                        });
-                        if (!result.ok) {
-                          // Non-blocking warning — still open PDF
-                          console.warn("[pricing] insertLead failed:", result.error);
-                        }
                         openQuotePdf(serial);
                         toast.success("PDF ready", {
                           id: loading,
-                          description: `${t("pricing.serial")}: ${result.serial ?? serial}`,
+                          description: `${t("pricing.serial")}: ${serial}`,
                         });
                       } catch (err: any) {
                         toast.error(t("form.submitError"), {

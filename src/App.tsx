@@ -26,7 +26,6 @@ import Work from "@/pages/Work";
 import CaseStudyDetail from "@/pages/CaseStudyDetail";
 import About from "@/pages/About";
 import Contact from "@/pages/Contact";
-import Admin from "@/pages/Admin";
 import NotFound from "@/pages/NotFound";
 
 function AppRouter() {
@@ -52,7 +51,6 @@ function AppRouter() {
         <Route path="/work/:slug">{(params) => <CaseStudyDetail slug={params.slug} />}</Route>
         <Route path="/about" component={About} />
         <Route path="/contact" component={Contact} />
-        <Route path="/admin" component={Admin} />
         <Route component={NotFound} />
       </Switch>
     </Router>
