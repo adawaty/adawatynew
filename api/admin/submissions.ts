@@ -5,10 +5,18 @@
 // DELETE { serial }                                → delete row
 import { neon } from "@neondatabase/serverless";
 
+const CORS = {
+  "Access-Control-Allow-Origin":  "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization",
+  "content-type": "application/json; charset=utf-8",
+  "cache-control": "no-store",
+};
+
 function json(status: number, body: unknown, extra?: Record<string, string>) {
   return new Response(JSON.stringify(body), {
     status,
-    headers: { "content-type": "application/json; charset=utf-8", "cache-control": "no-store", ...(extra ?? {}) },
+    headers: { ...CORS, ...(extra ?? {}) },
   });
 }
 
@@ -58,6 +66,11 @@ async function ensureSchema(sql: ReturnType<typeof neon>) {
 }
 
 export default async function handler(req: Request) {
+  // CORS preflight
+  if (req.method === "OPTIONS") {
+    return new Response(null, { status: 204, headers: CORS });
+  }
+
   const bearer = getBearer(req);
   if (!bearer || bearer !== getAdminToken()) {
     return json(401, { ok: false, error: "Unauthorized" }, { "www-authenticate": "Bearer" });
